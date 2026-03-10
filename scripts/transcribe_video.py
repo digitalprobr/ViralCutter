@@ -16,6 +16,13 @@ def apply_safe_globals_hack():
     We first try to add safe globals. If that's not enough/fails, we monkeypatch torch.load.
     """
     try:
+        # Determine major torch version to decide whether to apply aggressive monkeypatch
+        try:
+            tver = torch.__version__.split('+')[0]
+            torch_major = int(tver.split('.')[0])
+        except Exception:
+            torch_major = None
+
         import omegaconf
         if hasattr(torch.serialization, 'add_safe_globals'):
             torch.serialization.add_safe_globals([
@@ -25,28 +32,34 @@ def apply_safe_globals_hack():
                 omegaconf.base.Node
             ])
             print("Aplicado patch de segurança para globals do Omegaconf.")
-            
-        # Monkeypatch agressivo para garantir compatibilidade com Pyannote/WhisperX antigos
-        original_load = torch.load
-        
-        def safe_load(*args, **kwargs):
-            kwargs['weights_only'] = False
-            return original_load(*args, **kwargs)
-            
-        torch.load = safe_load
-        print("Aplicado monkeypatch em torch.load para forçar weights_only=False.")
-        
+
+        # Only apply the aggressive torch.load monkeypatch for torch 1.x environments
+        if torch_major == 1:
+            original_load = torch.load
+
+            def safe_load(*args, **kwargs):
+                # Ensure backwards compatibility when weights_only kwarg isn't provided by older code
+                kwargs['weights_only'] = False
+                return original_load(*args, **kwargs)
+
+            torch.load = safe_load
+            print("Aplicado monkeypatch em torch.load para forçar weights_only=False (torch 1.x detected).")
+        else:
+            print(f"Skipping aggressive monkeypatch: detected torch {torch.__version__}. If you see model incompatibility warnings, consider using a torch 1.x environment.")
+
     except ImportError:
-        pass
+        # omegaconf not available; skip safely
+        print("apply_safe_globals_hack: omegaconf not available; skipping safe-globals hack.")
     except Exception as e:
         print(f"Aviso ao tentar aplicar patch de globals: {e}")
 
+    # Torchaudio helper for newer PyTorch versions
     try:
         import torchaudio
         if not hasattr(torchaudio, 'list_audio_backends'):
             torchaudio.list_audio_backends = lambda: []
-            print("Aplicado monkeypatch em torchaudio.list_audio_backends para PyTorch >= 2.4.")
-    except Exception as e:
+            print("Aplicado monkeypatch em torchaudio.list_audio_backends para compatibilidade.")
+    except Exception:
         pass
 
 def parse_srt(srt_path):

@@ -1,11 +1,13 @@
 # Outras dependencias essenciais
-numpy<2.1.0
+numpy<2.0
+setuptools==69.5.1
 g4f[all]
 yt-dlp
 ffmpeg-python
 whisperx
 mediapipe
 google-genai
+google-generativeai
 insightface
 gradio
 opencv-python
@@ -14,3 +16,9 @@ fastapi
 uvicorn
 deep-translator
 tqdm
+
+# Versões críticas de compatibilidade
+# transformers>=4.47+ exige Torch 2.6+ e quebra o alinhamento do WhisperX
+transformers==4.46.3
+accelerate>=0.26.0
+pytorch-lightning>=2.0
