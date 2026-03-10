@@ -373,6 +373,11 @@ input[type="password"], textarea, select {
     border: 1px solid #333 !important;
 }
 
+/* Header and Footer Text Contrast Fix */
+.markdown h1, .markdown h2, .markdown h3, .markdown p, .markdown li, .markdown strong, .markdown a {
+    color: #f5f5f5 !important;
+}
+
 /* Hide Footer */
 footer {visibility: hidden}
 
@@ -819,7 +824,7 @@ with gr.Blocks(title=i18n("ViralCutter WebUI"), theme=gr.themes.Default(primary_
     
     gr.Markdown(f"""
         <hr>
-        <div style='text-align: center; font-size: 0.9em; color: #777;'>
+        <div style='text-align: center; font-size: 0.9em; color: #e0e0e0;'>
             <p>
                 <strong>{i18n('Desenvolvido por Rafael Godoy')}</strong>
                 <br>
